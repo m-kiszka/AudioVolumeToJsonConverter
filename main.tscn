@@ -1,0 +1,140 @@
+[gd_scene load_steps=2 format=3 uid="uid://dcuk0ur3jm6w"]
+
+[ext_resource type="Script" uid="uid://ddw5mke4m0ytb" path="res://main.gd" id="1_ig7tw"]
+
+[node name="Control" type="Control" node_paths=PackedStringArray("fileDialog", "itemList", "outputDirDialog", "outputDirButton", "audioPlayer")]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+script = ExtResource("1_ig7tw")
+fileDialog = NodePath("CanvasLayer/FileDialog")
+itemList = NodePath("CanvasLayer/VSeparator/SelectedFiles/ItemList")
+outputDirDialog = NodePath("CanvasLayer/OutputDirDialog")
+outputDirButton = NodePath("CanvasLayer/VSeparator/ConvertedFiles/ChooseOutputDir")
+audioPlayer = NodePath("AudioStreamPlayer")
+
+[node name="CanvasLayer" type="CanvasLayer" parent="."]
+follow_viewport_enabled = true
+
+[node name="ColorRect" type="ColorRect" parent="CanvasLayer"]
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+color = Color(0.209459, 0.409714, 2.88785e-07, 1)
+
+[node name="OutputDirDialog" type="FileDialog" parent="CanvasLayer"]
+auto_translate_mode = 1
+title = "Open a Directory"
+ok_button_text = "Select Current Folder"
+file_mode = 2
+access = 2
+use_native_dialog = true
+
+[node name="FileDialog" type="FileDialog" parent="CanvasLayer"]
+title = "Open File(s)"
+ok_button_text = "Open"
+file_mode = 1
+access = 2
+use_native_dialog = true
+
+[node name="ConvertButton" type="Button" parent="CanvasLayer"]
+anchors_preset = 7
+anchor_left = 0.5
+anchor_top = 1.0
+anchor_right = 0.5
+anchor_bottom = 1.0
+offset_left = -150.0
+offset_top = -82.0
+offset_right = 150.0
+offset_bottom = -29.0
+grow_horizontal = 2
+grow_vertical = 0
+size_flags_horizontal = 4
+size_flags_vertical = 4
+theme_override_font_sizes/font_size = 32
+text = "CONVERT"
+
+[node name="VSeparator" type="VSeparator" parent="CanvasLayer"]
+offset_right = 4.0
+offset_bottom = 40.0
+
+[node name="SelectedFiles" type="Control" parent="CanvasLayer/VSeparator"]
+layout_mode = 1
+anchors_preset = 0
+offset_left = 19.0
+offset_top = 82.0
+offset_right = 20.0
+offset_bottom = 83.0
+
+[node name="ItemList" type="ItemList" parent="CanvasLayer/VSeparator/SelectedFiles"]
+layout_mode = 2
+offset_right = 500.0
+offset_bottom = 300.0
+select_mode = 1
+item_count = 2
+item_0/text = "TEST1"
+item_0/selectable = false
+item_1/text = "TEST2"
+
+[node name="ChooseFilesBtn" type="Button" parent="CanvasLayer/VSeparator/SelectedFiles"]
+layout_mode = 2
+offset_top = -35.0
+offset_right = 115.0
+offset_bottom = -4.0
+text = "Choose files..."
+
+[node name="ClearFiles" type="Button" parent="CanvasLayer/VSeparator/SelectedFiles"]
+layout_mode = 0
+offset_left = 129.0
+offset_top = 304.0
+offset_right = 200.0
+offset_bottom = 335.0
+text = "Clear all"
+
+[node name="ClearSelected" type="Button" parent="CanvasLayer/VSeparator/SelectedFiles"]
+layout_mode = 0
+offset_top = 304.0
+offset_right = 117.0
+offset_bottom = 335.0
+text = "Clear selected"
+
+[node name="ConvertedFiles" type="Control" parent="CanvasLayer/VSeparator"]
+layout_mode = 1
+anchors_preset = 1
+anchor_left = 1.0
+anchor_right = 1.0
+offset_left = 1097.0
+offset_top = 47.0
+offset_right = 1137.0
+offset_bottom = 87.0
+grow_horizontal = 0
+
+[node name="ChooseOutputDir" type="Button" parent="CanvasLayer/VSeparator/ConvertedFiles"]
+layout_mode = 1
+anchors_preset = 1
+anchor_left = 1.0
+anchor_right = 1.0
+offset_left = -560.0
+offset_bottom = 31.0
+grow_horizontal = 0
+text = "Choose output directory..."
+alignment = 0
+
+[node name="AudioStreamPlayer" type="AudioStreamPlayer" parent="."]
+
+[connection signal="dir_selected" from="CanvasLayer/OutputDirDialog" to="." method="_onDirSelected"]
+[connection signal="files_selected" from="CanvasLayer/FileDialog" to="." method="_onFilesSelected"]
+[connection signal="pressed" from="CanvasLayer/ConvertButton" to="." method="_onConvertPressed"]
+[connection signal="multi_selected" from="CanvasLayer/VSeparator/SelectedFiles/ItemList" to="." method="_OnMultiSelected"]
+[connection signal="pressed" from="CanvasLayer/VSeparator/SelectedFiles/ChooseFilesBtn" to="." method="_onChooseFiles"]
+[connection signal="pressed" from="CanvasLayer/VSeparator/SelectedFiles/ClearFiles" to="." method="_OnClearAll"]
+[connection signal="pressed" from="CanvasLayer/VSeparator/SelectedFiles/ClearSelected" to="." method="_OnClearSelected"]
+[connection signal="pressed" from="CanvasLayer/VSeparator/ConvertedFiles/ChooseOutputDir" to="." method="_onChooseOutputDir"]
+[connection signal="finished" from="AudioStreamPlayer" to="." method="_onAudioFinished"]
