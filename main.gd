@@ -3,7 +3,8 @@ extends Control
 @export var itemList: ItemList;
 var pathsList: Array[String];
 var selectedListIndexes: Array[int];
-var regex = RegEx.new();
+var regexFilename = RegEx.new();
+var regexFilenameNoExtension = RegEx.new();
 
 @export var currentVolumeData: Dictionary[float, float];
 @export var finalVolumeData: Array;
@@ -11,15 +12,20 @@ var regex = RegEx.new();
 var spectrum = AudioServer.get_bus_effect_instance(0, 0);
 var converting: bool = false;
 var currentlyConvertedIndex: int = 0;
+@export var convertedList: ItemList;
 
 @export var outputDirDialog: FileDialog;
 @export var outputDirButton: Button;
 
+@export var convertingBtn: Button;
+
 @export var audioPlayer: AudioStreamPlayer;
 
 func _ready():
-	regex.compile("[^/]*$");
+	regexFilename.compile("[^/]*$");
+	regexFilenameNoExtension.compile("(.+?)(\\.[^.]*$|$)");
 	itemList.clear();
+	convertedList.clear();
 
 func _onChooseFiles() -> void:
 	fileDialog.visible = true;
@@ -27,7 +33,7 @@ func _onChooseFiles() -> void:
 func _onFilesSelected(paths: PackedStringArray) -> void:
 	pathsList.assign(paths);
 	for path in paths:
-		var filename = regex.search(path).get_string();
+		var filename = regexFilename.search(path).get_string();
 		itemList.add_item(filename);
 
 func _OnMultiSelected(_index: int, _selected: bool) -> void:
@@ -59,8 +65,9 @@ func _onConvertPressed() -> void:
 		&& !converting
 		):
 		currentlyConvertedIndex = 0;
-		convertQueue()
-		converting = true;
+		convertQueue();
+		convertingStarted();
+		
 
 func convertQueue() -> void:
 	if ((currentlyConvertedIndex+1) <= pathsList.size()):
@@ -68,14 +75,23 @@ func convertQueue() -> void:
 		audioPlayer.set_stream(audioFile);
 		audioPlayer.play();
 	else:
-		saveConvertedData();
-		converting = false;
+		convertingFinished();
 
 func _onAudioFinished() -> void:
-	finalVolumeData.append(currentVolumeData.values());
+	saveConvertedData();
 	currentVolumeData.clear()
 	currentlyConvertedIndex += 1;
 	convertQueue()
+
+func convertingFinished():
+	convertingBtn.disabled = false;
+	convertingBtn.text = "CONVERT";
+	converting = false;
+
+func convertingStarted():
+	convertingBtn.disabled = true;
+	convertingBtn.text = "CONVERTING...";
+	converting = true;
 
 func _process(_delta):
 	if (audioPlayer.is_playing()):
@@ -83,6 +99,8 @@ func _process(_delta):
 		currentVolumeData[AudioServer.get_time_since_last_mix()] = volume;
 
 func saveConvertedData():
-	var createdFile = FileAccess.open(outputDirButton.text + '/volumeData.json', FileAccess.WRITE);
-	var jsonString = JSON.stringify(finalVolumeData);
+	var jsonFilename = regexFilenameNoExtension.search(itemList.get_item_text(currentlyConvertedIndex)).get_string(1) + '.json';
+	convertedList.add_item(jsonFilename);
+	var createdFile = FileAccess.open(outputDirButton.text + '/' + jsonFilename, FileAccess.WRITE);
+	var jsonString = JSON.stringify(currentVolumeData);
 	createdFile.store_line(jsonString);
