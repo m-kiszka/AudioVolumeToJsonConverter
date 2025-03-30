@@ -1,8 +1,14 @@
-[gd_scene load_steps=2 format=3 uid="uid://dcuk0ur3jm6w"]
+[gd_scene load_steps=4 format=3 uid="uid://dcuk0ur3jm6w"]
 
 [ext_resource type="Script" uid="uid://ddw5mke4m0ytb" path="res://main.gd" id="1_ig7tw"]
 
-[node name="Control" type="Control" node_paths=PackedStringArray("fileDialog", "itemList", "convertedList", "outputDirDialog", "outputDirButton", "convertingBtn", "audioPlayer")]
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_ig7tw"]
+bg_color = Color(1, 1, 1, 1)
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_0xm2m"]
+bg_color = Color(0.0487217, 0, 0.4025, 1)
+
+[node name="Control" type="Control" node_paths=PackedStringArray("fileDialog", "itemList", "convertedList", "outputDirDialog", "outputDirButton", "convertingBtn", "audioPlayer", "playbackTimer", "progressBar")]
 layout_mode = 3
 anchors_preset = 15
 anchor_right = 1.0
@@ -17,8 +23,10 @@ itemList = NodePath("CanvasLayer/SelectedFiles/ItemList")
 convertedList = NodePath("CanvasLayer/ConvertedFiles/ItemList")
 outputDirDialog = NodePath("CanvasLayer/OutputDirDialog")
 outputDirButton = NodePath("CanvasLayer/ConvertedFiles/ChooseOutputDir")
-convertingBtn = NodePath("CanvasLayer/ConvertButton")
+convertingBtn = NodePath("CanvasLayer/Control/ConvertButton")
 audioPlayer = NodePath("AudioStreamPlayer")
+playbackTimer = NodePath("Timer")
+progressBar = NodePath("CanvasLayer/Control/ProgressBar")
 
 [node name="CanvasLayer" type="CanvasLayer" parent="."]
 follow_viewport_enabled = true
@@ -45,23 +53,6 @@ ok_button_text = "Open"
 file_mode = 1
 access = 2
 use_native_dialog = true
-
-[node name="ConvertButton" type="Button" parent="CanvasLayer"]
-anchors_preset = 7
-anchor_left = 0.5
-anchor_top = 1.0
-anchor_right = 0.5
-anchor_bottom = 1.0
-offset_left = -150.0
-offset_top = -82.0
-offset_right = 150.0
-offset_bottom = -29.0
-grow_horizontal = 2
-grow_vertical = 0
-size_flags_horizontal = 4
-size_flags_vertical = 4
-theme_override_font_sizes/font_size = 32
-text = "CONVERT"
 
 [node name="SelectedFiles" type="Control" parent="CanvasLayer"]
 layout_mode = 3
@@ -122,6 +113,7 @@ text = "Choose output directory..."
 alignment = 0
 
 [node name="ItemList" type="ItemList" parent="CanvasLayer/ConvertedFiles"]
+layout_mode = 0
 offset_left = -520.0
 offset_top = 35.0
 offset_bottom = 435.0
@@ -131,15 +123,78 @@ item_0/text = "TEST1"
 item_0/selectable = false
 item_1/text = "TEST2"
 
+[node name="ClearFiles" type="Button" parent="CanvasLayer/ConvertedFiles"]
+layout_mode = 0
+offset_left = -391.0
+offset_top = 439.0
+offset_right = -320.0
+offset_bottom = 470.0
+text = "Clear all"
+
+[node name="ClearSelected" type="Button" parent="CanvasLayer/ConvertedFiles"]
+layout_mode = 0
+offset_left = -520.0
+offset_top = 439.0
+offset_right = -403.0
+offset_bottom = 470.0
+text = "Clear selected"
+
+[node name="Control" type="Control" parent="CanvasLayer"]
+layout_mode = 3
+anchors_preset = 7
+anchor_left = 0.5
+anchor_top = 1.0
+anchor_right = 0.5
+anchor_bottom = 1.0
+offset_left = -20.0
+offset_top = -40.0
+offset_right = 20.0
+grow_horizontal = 2
+grow_vertical = 0
+
+[node name="ProgressBar" type="ProgressBar" parent="CanvasLayer/Control"]
+visible = false
+layout_mode = 0
+offset_left = -130.0
+offset_top = 20.0
+offset_right = 170.0
+offset_bottom = 26.0
+theme_override_styles/background = SubResource("StyleBoxFlat_ig7tw")
+theme_override_styles/fill = SubResource("StyleBoxFlat_0xm2m")
+fill_mode = 1
+show_percentage = false
+
+[node name="ConvertButton" type="Button" parent="CanvasLayer/Control"]
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -150.0
+offset_top = -53.0
+offset_right = 150.0
+grow_horizontal = 2
+grow_vertical = 2
+size_flags_horizontal = 4
+size_flags_vertical = 4
+theme_override_font_sizes/font_size = 32
+text = "CONVERT"
+
 [node name="AudioStreamPlayer" type="AudioStreamPlayer" parent="."]
+
+[node name="Timer" type="Timer" parent="."]
+one_shot = true
 
 [connection signal="dir_selected" from="CanvasLayer/OutputDirDialog" to="." method="_onDirSelected"]
 [connection signal="files_selected" from="CanvasLayer/FileDialog" to="." method="_onFilesSelected"]
-[connection signal="pressed" from="CanvasLayer/ConvertButton" to="." method="_onConvertPressed"]
 [connection signal="multi_selected" from="CanvasLayer/SelectedFiles/ItemList" to="." method="_OnMultiSelected"]
 [connection signal="pressed" from="CanvasLayer/SelectedFiles/ChooseFilesBtn" to="." method="_onChooseFiles"]
 [connection signal="pressed" from="CanvasLayer/SelectedFiles/ClearFiles" to="." method="_OnClearAll"]
 [connection signal="pressed" from="CanvasLayer/SelectedFiles/ClearSelected" to="." method="_OnClearSelected"]
 [connection signal="pressed" from="CanvasLayer/ConvertedFiles/ChooseOutputDir" to="." method="_onChooseOutputDir"]
-[connection signal="multi_selected" from="CanvasLayer/ConvertedFiles/ItemList" to="." method="_OnMultiSelected"]
+[connection signal="multi_selected" from="CanvasLayer/ConvertedFiles/ItemList" to="." method="_onMultiSelectedConverted"]
+[connection signal="pressed" from="CanvasLayer/ConvertedFiles/ClearFiles" to="." method="_onClearAllConverted"]
+[connection signal="pressed" from="CanvasLayer/ConvertedFiles/ClearSelected" to="." method="_onClearSelectedConverted"]
+[connection signal="pressed" from="CanvasLayer/Control/ConvertButton" to="." method="_onConvertPressed"]
 [connection signal="finished" from="AudioStreamPlayer" to="." method="_onAudioFinished"]
