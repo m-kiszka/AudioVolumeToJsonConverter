@@ -26,6 +26,18 @@ var maxAudioPosition: float;
 
 @export var progressBar: ProgressBar;
 
+@export var fromHzBox: SpinBox;
+@export var toHzBox: SpinBox;
+var fromHz: float = 0.0;
+var toHz: float = 500.0;
+
+@export var intervalBox: SpinBox;
+var interval: float = 0.0;
+var startTimestamp: float = 0;
+
+@export var popupWindow: Window;
+@export var popupLabel: Label;
+
 var canClick: bool = true;
 
 func _ready():
@@ -75,14 +87,22 @@ func _onConvertPressed() -> void:
 	if (!canClick): return;
 
 	if (
-		outputDirButton.text != "Choose output directory..."
-		&& pathsList.size() > 0
-		&& !converting
+		!converting
 	):
+		if (pathsList.size() == 0):
+			popupWindow.title = "ERROR";
+			popupLabel.text = "Choose the files you want to convert!";
+			popupWindow.visible = true;
+			return;
+		if (outputDirButton.text == "Choose output directory..."):
+			popupWindow.title = "ERROR";
+			popupLabel.text = "Choose an output directory!";
+			popupWindow.visible = true;
+			return;
+
 		currentlyConvertedIndex = 0;
 		convertQueue();
 		convertingStarted();
-		
 
 func convertQueue() -> void:
 	if ((currentlyConvertedIndex+1) <= pathsList.size()):
@@ -94,6 +114,10 @@ func convertQueue() -> void:
 
 		audioPlayer.set_stream(audioFile);
 		audioPlayer.play();
+
+		getCurrentVolumeData();
+		if (interval > 0):
+			startTimestamp = Time.get_ticks_msec();
 	else:
 		convertingFinished();
 
@@ -110,8 +134,16 @@ func convertingFinished():
 	convertingBtn.text = "CONVERT";
 	canClick = true;
 	converting = false;
+	startTimestamp = 0;
 
-func convertingStarted():	
+	popupWindow.title = "Great success!";
+	popupLabel.text = "Conversion finished successfully!";
+	popupWindow.visible = true;
+
+func convertingStarted():
+	interval = intervalBox.value;
+	fromHz = fromHzBox.value;
+	toHz = toHzBox.value;
 	progressBar.visible = true;
 	convertingBtn.disabled = true;
 	convertingBtn.text = "CONVERTING...";
@@ -120,11 +152,20 @@ func convertingStarted():
 
 func _process(_delta):
 	if (audioPlayer.is_playing()):
-		var volume = spectrum.get_magnitude_for_frequency_range(0, 500).length()
-		currentVolumeData[AudioServer.get_time_since_last_mix()] = volume;
+		if (interval > 0):
+			if (Time.get_ticks_msec() > (startTimestamp + interval)):
+				print(Time.get_ticks_msec() - startTimestamp)
+				getCurrentVolumeData();
+				startTimestamp = Time.get_ticks_msec();
+		else:
+			getCurrentVolumeData();
 
 		#var percentageLeft = (playbackTimer.time_left * 100) / maxAudioPosition;
 		progressBar.value = playbackTimer.time_left;
+
+func getCurrentVolumeData():
+	var volume = spectrum.get_magnitude_for_frequency_range(fromHz, toHz).length()
+	currentVolumeData[AudioServer.get_time_since_last_mix()] = volume;
 
 func saveConvertedData():
 	var jsonFilename = regexFilenameNoExtension.search(itemList.get_item_text(currentlyConvertedIndex)).get_string(1) + '.json';
@@ -148,3 +189,6 @@ func _onClearAllConverted() -> void:
 func _onMultiSelectedConverted(_index: int, _selected: bool) -> void:
 	if (!canClick): return;
 	convertedListIndexes.assign(convertedList.get_selected_items());
+
+func _onWindowClose() -> void:
+	popupWindow.visible = false;

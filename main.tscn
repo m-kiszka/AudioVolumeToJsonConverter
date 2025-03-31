@@ -8,7 +8,7 @@ bg_color = Color(1, 1, 1, 1)
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_0xm2m"]
 bg_color = Color(0.0487217, 0, 0.4025, 1)
 
-[node name="Control" type="Control" node_paths=PackedStringArray("fileDialog", "itemList", "convertedList", "outputDirDialog", "outputDirButton", "convertingBtn", "audioPlayer", "playbackTimer", "progressBar")]
+[node name="Control" type="Control" node_paths=PackedStringArray("fileDialog", "itemList", "convertedList", "outputDirDialog", "outputDirButton", "convertingBtn", "audioPlayer", "playbackTimer", "progressBar", "fromHzBox", "toHzBox", "intervalBox", "popupWindow", "popupLabel")]
 layout_mode = 3
 anchors_preset = 15
 anchor_right = 1.0
@@ -27,6 +27,11 @@ convertingBtn = NodePath("CanvasLayer/Control/ConvertButton")
 audioPlayer = NodePath("AudioStreamPlayer")
 playbackTimer = NodePath("Timer")
 progressBar = NodePath("CanvasLayer/Control/ProgressBar")
+fromHzBox = NodePath("CanvasLayer/SelectedFiles/FromHz")
+toHzBox = NodePath("CanvasLayer/SelectedFiles/ToHz")
+intervalBox = NodePath("CanvasLayer/SelectedFiles/Interval")
+popupWindow = NodePath("Window")
+popupLabel = NodePath("Window/Label")
 
 [node name="CanvasLayer" type="CanvasLayer" parent="."]
 follow_viewport_enabled = true
@@ -94,6 +99,61 @@ offset_right = 117.0
 offset_bottom = 434.0
 text = "Clear selected"
 
+[node name="FromHz" type="SpinBox" parent="CanvasLayer/SelectedFiles"]
+layout_mode = 1
+anchors_preset = 2
+anchor_top = 1.0
+anchor_bottom = 1.0
+offset_top = 446.0
+offset_right = 190.0
+offset_bottom = 486.0
+grow_vertical = 0
+max_value = 50000.0
+alignment = 1
+prefix = "From:"
+suffix = "Hz"
+
+[node name="ToHz" type="SpinBox" parent="CanvasLayer/SelectedFiles"]
+layout_mode = 1
+anchors_preset = 2
+anchor_top = 1.0
+anchor_bottom = 1.0
+offset_left = 200.0
+offset_top = 446.0
+offset_right = 390.0
+offset_bottom = 486.0
+grow_vertical = 0
+min_value = 1.0
+max_value = 50000.0
+value = 500.0
+alignment = 1
+prefix = "To:"
+suffix = "Hz"
+
+[node name="Interval" type="SpinBox" parent="CanvasLayer/SelectedFiles"]
+layout_mode = 1
+anchors_preset = 2
+anchor_top = 1.0
+anchor_bottom = 1.0
+offset_top = 492.0
+offset_right = 300.0
+offset_bottom = 532.0
+grow_vertical = 0
+max_value = 1000.0
+alignment = 1
+prefix = "Data interval ~"
+suffix = "ms"
+
+[node name="Label" type="Label" parent="CanvasLayer/SelectedFiles"]
+layout_mode = 0
+offset_left = 1.0
+offset_top = 532.0
+offset_right = 363.0
+offset_bottom = 555.0
+theme_override_font_sizes/font_size = 12
+text = "Leave at 0 to save the data every possible frame."
+vertical_alignment = 1
+
 [node name="ConvertedFiles" type="Control" parent="CanvasLayer"]
 layout_mode = 3
 anchors_preset = 1
@@ -141,23 +201,24 @@ text = "Clear selected"
 
 [node name="Control" type="Control" parent="CanvasLayer"]
 layout_mode = 3
-anchors_preset = 7
-anchor_left = 0.5
+anchors_preset = 3
+anchor_left = 1.0
 anchor_top = 1.0
-anchor_right = 0.5
+anchor_right = 1.0
 anchor_bottom = 1.0
-offset_left = -20.0
-offset_top = -40.0
-offset_right = 20.0
-grow_horizontal = 2
+offset_left = -576.0
+offset_top = -46.0
+offset_right = -575.0
+offset_bottom = -6.0
+grow_horizontal = 0
 grow_vertical = 0
 
 [node name="ProgressBar" type="ProgressBar" parent="CanvasLayer/Control"]
 visible = false
 layout_mode = 0
-offset_left = -130.0
+offset_left = -149.0
 offset_top = 20.0
-offset_right = 170.0
+offset_right = 151.0
 offset_bottom = 26.0
 theme_override_styles/background = SubResource("StyleBoxFlat_ig7tw")
 theme_override_styles/fill = SubResource("StyleBoxFlat_0xm2m")
@@ -186,6 +247,34 @@ text = "CONVERT"
 [node name="Timer" type="Timer" parent="."]
 one_shot = true
 
+[node name="Window" type="Window" parent="."]
+title = "ERROR"
+initial_position = 1
+size = Vector2i(347, 100)
+visible = false
+wrap_controls = true
+unresizable = true
+always_on_top = true
+popup_window = true
+force_native = true
+
+[node name="Label" type="Label" parent="Window"]
+anchors_preset = -1
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -160.0
+offset_top = -40.0
+offset_right = 160.0
+offset_bottom = 40.0
+grow_horizontal = 2
+grow_vertical = 2
+text = "Choose the files you want to convert!"
+horizontal_alignment = 1
+vertical_alignment = 1
+autowrap_mode = 2
+
 [connection signal="dir_selected" from="CanvasLayer/OutputDirDialog" to="." method="_onDirSelected"]
 [connection signal="files_selected" from="CanvasLayer/FileDialog" to="." method="_onFilesSelected"]
 [connection signal="multi_selected" from="CanvasLayer/SelectedFiles/ItemList" to="." method="_OnMultiSelected"]
@@ -198,3 +287,4 @@ one_shot = true
 [connection signal="pressed" from="CanvasLayer/ConvertedFiles/ClearSelected" to="." method="_onClearSelectedConverted"]
 [connection signal="pressed" from="CanvasLayer/Control/ConvertButton" to="." method="_onConvertPressed"]
 [connection signal="finished" from="AudioStreamPlayer" to="." method="_onAudioFinished"]
+[connection signal="close_requested" from="Window" to="." method="_onWindowClose"]
