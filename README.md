@@ -1,5 +1,8 @@
 Small test program to save the volume data of an audio file per frame (or custom interval) to JSON format.
 
+![obraz](https://github.com/user-attachments/assets/31de704d-fb20-49e4-91d2-2eb9209daa61)
+
+
 Mostly makes use of: https://docs.godotengine.org/en/stable/classes/class_audioeffectspectrumanalyzerinstance.html#class-audioeffectspectrumanalyzerinstance-method-get-magnitude-for-frequency-range
 
 Main purpose of this program is to get the data, that I can then import to my other project, where the object's collider size is scaled by audio clip volume.
