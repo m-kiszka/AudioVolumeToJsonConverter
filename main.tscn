@@ -259,7 +259,7 @@ popup_window = true
 force_native = true
 
 [node name="Label" type="Label" parent="Window"]
-anchors_preset = -1
+anchors_preset = 8
 anchor_left = 0.5
 anchor_top = 0.5
 anchor_right = 0.5
